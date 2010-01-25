@@ -245,6 +245,27 @@ rescue
   []
 end
 
+def cleanup name
+  require 'formula'
+
+  f = Formula.factory name
+
+  # we can't tell which one to keep in this circumstance
+  raise "The most recent version of #{name} is not installed" unless f.installed?
+
+  if f.prefix.parent.directory?
+    kids = f.prefix.parent.children
+    kids.each do |keg|
+      next if f.prefix == keg
+      print "Uninstalling #{keg}..."
+      FileUtils.rm_rf keg
+      puts
+    end
+  end
+
+  prune # seems like a good time to do some additional cleanup
+end
+
 def clean f
   Cleaner.new f
  
